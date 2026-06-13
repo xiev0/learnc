@@ -2,53 +2,61 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Weapon {
+typedef struct {
+    int critical_chance;
+    float weight;
+} Stats;
+
+typedef struct {
     char title[32];
     int damage;
-    int durability;
-};
+    Stats spec;
+} Weapon;
 
-struct Weapon* init_weapon (const char* title, int damage, int durability) {
-    struct Weapon *init = malloc(sizeof(struct Weapon));
-    if (init == NULL) {
-        return NULL;
-    }
 
-    strcpy (init->title, title);
+Weapon* init_weapon(const char* title, int damage, int crit, float weight) {
+    Weapon *init = malloc(sizeof(Weapon));
+    if (init == NULL) return NULL;
+
+    strcpy(init->title, title);
     init->damage = damage;
-    init->durability = durability;
+
+
+    init->spec.critical_chance = crit;
+    init->spec.weight = weight;
 
     return init;
 }
 
-void use_weapon_durability(struct Weapon *init, int durability) {
+void use_weapon_damage(Weapon *init, int damage) {
     if (init == NULL) return;
-
-    init->durability -= durability;
-    if (init->durability < 0)
-        init->durability = 0;
+    init->damage -= damage;
+    if (init->damage < 0) init->damage = 0;
 }
 
-void use_weapon_damage(struct Weapon *init, int damage) {
+void use_weapon_critical_chance(Weapon *init, int critical_chance) {
     if (init == NULL) return;
 
-    init->damage -= damage;
-    if (init->damage < 0)
-        init->damage = 0;
+
+    init->spec.critical_chance -= critical_chance;
+    if (init->spec.critical_chance < 0)
+        init->spec.critical_chance = 0;
 }
 
 int main () {
-    struct Weapon *weapon = init_weapon("Sekiro", 15, 5);
+    Weapon *weapon = init_weapon("Sekiro", 15, 5, 1.2f);
     if (weapon == NULL) {
         printf("Не удалось выделить память\n");
         return 1;
     }
+    
+    printf("Оружие: %s, Урон: %d, Вес: %.1f, Крит: %d%%\n",
+           weapon->title, weapon->damage, weapon->spec.weight, weapon->spec.critical_chance);
 
-    printf("Оружие: %s, Урон: %d, Снижение защиты: %d\n", weapon->title, weapon->damage, weapon->durability);
-    use_weapon_durability(weapon, 1);
-    use_weapon_damage(weapon, 3);
+    use_weapon_critical_chance(weapon, 2);
 
-    printf("Последствия от удара %s : Урон: %d, Снижение защиты: %d\n", weapon->title, weapon->damage, weapon->durability);
+    printf("После изменения крита - Крит: %d%%\n", weapon->spec.critical_chance);
+
     free(weapon);
     weapon = NULL;
 
